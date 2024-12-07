@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { History, HistoryDocument } from './models/history.schema';
 import { IWeather } from 'src/weather/interfaces';
+import { HistoryDto } from './dto';
 
 @Injectable()
 export class HistoryService {
@@ -21,5 +22,9 @@ export class HistoryService {
         };
 
         return this.userModel.insertMany([newHistory]);
+    }
+
+    async getHistory(dto: HistoryDto): Promise<HistoryDocument[]> {
+        return this.userModel.find({ user_id: dto.userId }).limit(dto.limit);
     }
 }
