@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import configurations from '../../configurations';
 import { MongooseModule } from '@nestjs/mongoose';
 import { WeatherModule } from 'src/weather/weather.module';
+import { UserModule } from 'src/history/history.module';
 
 @Module({
     imports: [
@@ -19,6 +20,7 @@ import { WeatherModule } from 'src/weather/weather.module';
             },
         }),
         WeatherModule,
+        UserModule,
     ],
     controllers: [AppController],
     providers: [AppService],

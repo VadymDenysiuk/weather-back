@@ -2,11 +2,15 @@ import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 import { WeatherDto } from './dto';
 import { ConfigService } from '@nestjs/config';
-import { WeatherResponse } from './interfaces';
+import { IWeather } from './interfaces';
+import { HistoryService } from 'src/history/history.service';
 
 @Injectable()
 export class WeatherService {
-    constructor(private readonly configService: ConfigService) {}
+    constructor(
+        private readonly configService: ConfigService,
+        private readonly historyService: HistoryService,
+    ) {}
 
     private readonly apiKey = this.configService.get('weatherApiKey');
     private readonly weatherApiUrl = this.configService.get('weatherApiUrl');
@@ -33,13 +37,13 @@ export class WeatherService {
         }
     }
 
-    async getWeather(dto: WeatherDto): Promise<WeatherResponse> {
-        const { city } = dto;
+    async getWeather(dto: WeatherDto): Promise<IWeather> {
+        const { city, userId } = dto;
 
         const { lat, lon } = await this.getCoordinates(city);
 
         try {
-            const response = await axios.get<WeatherResponse>(this.weatherApiUrl, {
+            const response = await axios.get<IWeather>(this.weatherApiUrl, {
                 params: {
                     lat,
                     lon,
@@ -47,6 +51,8 @@ export class WeatherService {
                     units: 'metric',
                 },
             });
+
+            this.historyService.addHistory(userId, response.data);
 
             return response.data;
         } catch (error) {
