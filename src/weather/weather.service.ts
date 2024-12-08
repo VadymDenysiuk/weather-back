@@ -37,7 +37,7 @@ export class WeatherService {
         }
     }
 
-    async getWeather(dto: WeatherDto): Promise<IWeather> {
+    async getWeather(dto: WeatherDto): Promise<IWeather[]> {
         const { city, userId } = dto;
 
         const { lat, lon } = await this.getCoordinates(city);
@@ -54,7 +54,7 @@ export class WeatherService {
 
             this.historyService.addHistory(userId, response.data);
 
-            return response.data;
+            return [response.data];
         } catch (error) {
             throw new Error(`Failed to fetch weather data: ${error.message}`);
         }
