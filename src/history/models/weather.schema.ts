@@ -67,6 +67,9 @@ export class Weather {
 
     @Prop()
     cod: number;
+
+    @Prop()
+    city: string;
 }
 
 export const WeatherSchema = SchemaFactory.createForClass(Weather);

@@ -16,7 +16,9 @@ export class WeatherService {
     private readonly weatherApiUrl = this.configService.get('weatherApiUrl');
     private readonly geocodingApiUrl = this.configService.get('geocodingApiUrl');
 
-    private async getCoordinates(city: string): Promise<{ lat: number; lon: number }> {
+    private async getCoordinates(
+        city: string,
+    ): Promise<{ lat: number; lon: number; name: string }> {
         try {
             const response = await axios.get(this.geocodingApiUrl, {
                 params: {
@@ -40,7 +42,7 @@ export class WeatherService {
                 );
             }
 
-            return { lat: location.lat, lon: location.lon };
+            return { lat: location.lat, lon: location.lon, name: location.name };
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 throw new HttpException(
@@ -56,7 +58,7 @@ export class WeatherService {
     async getWeather(dto: WeatherDto): Promise<IWeather[]> {
         const { city, userId } = dto;
 
-        const { lat, lon } = await this.getCoordinates(city);
+        const { lat, lon, name } = await this.getCoordinates(city);
 
         try {
             const response = await axios.get<IWeather>(this.weatherApiUrl, {
@@ -68,9 +70,10 @@ export class WeatherService {
                 },
             });
 
-            await this.historyService.addHistory(userId, response.data);
+            const updatedData = { ...response.data, city: name };
+            await this.historyService.addHistory(userId, updatedData);
 
-            return [response.data];
+            return [updatedData];
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 throw new HttpException(
