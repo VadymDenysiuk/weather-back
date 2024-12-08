@@ -24,7 +24,7 @@
 
 ## Description
 
-To run the project, you need to create an .env file in the root of the project (the contents of the file can be found in .env.example)
+To run the project, you need to create an .env file in the root of the project.
 
 ## Project setup
 
