@@ -25,6 +25,9 @@ export class HistoryService {
     }
 
     async getHistory(dto: HistoryDto): Promise<HistoryDocument[]> {
-        return this.userModel.find({ user_id: dto.userId }).limit(dto.limit);
+        return this.userModel
+            .find({ user_id: dto.userId })
+            .limit(dto.limit)
+            .sort({ created_at: -1 });
     }
 }
