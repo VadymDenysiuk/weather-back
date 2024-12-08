@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import axios from 'axios';
 import { WeatherDto } from './dto';
 import { ConfigService } from '@nestjs/config';
@@ -27,13 +27,29 @@ export class WeatherService {
             });
 
             const [location] = response.data;
+
             if (!location) {
-                throw new Error(`City "${city}" not found`);
+                throw new HttpException(
+                    {
+                        statusCode: HttpStatus.NOT_FOUND,
+                        error: 'Not Found',
+                        message: `City "${city}" not found`,
+                        details: { city },
+                    },
+                    HttpStatus.NOT_FOUND,
+                );
             }
 
             return { lat: location.lat, lon: location.lon };
         } catch (error) {
-            throw new Error(`Failed to fetch coordinates: ${error.message}`);
+            if (axios.isAxiosError(error)) {
+                throw new HttpException(
+                    `Failed to fetch coordinates: ${error.response?.data?.message || error.message}`,
+                    error.response?.status || HttpStatus.BAD_REQUEST,
+                );
+            }
+
+            throw new HttpException(`Unexpected error: ${error.message}`, error.status);
         }
     }
 
@@ -52,11 +68,18 @@ export class WeatherService {
                 },
             });
 
-            this.historyService.addHistory(userId, response.data);
+            await this.historyService.addHistory(userId, response.data);
 
             return [response.data];
         } catch (error) {
-            throw new Error(`Failed to fetch weather data: ${error.message}`);
+            if (axios.isAxiosError(error)) {
+                throw new HttpException(
+                    `Failed to fetch weather data: ${error.response?.data?.message || error.message}`,
+                    error.response?.status || HttpStatus.BAD_REQUEST,
+                );
+            }
+
+            throw new HttpException(`Unexpected error: ${error.message}`, error.status);
         }
     }
 }
